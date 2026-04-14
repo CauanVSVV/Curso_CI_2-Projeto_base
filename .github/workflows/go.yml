@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         go_version: ['1.18', '1.17', '>=1.18']
+
     steps:
     - uses: actions/checkout@v3
 
@@ -20,35 +21,40 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go_version }}
-      
-    - name: Build-DB
-      run: docker compose build
-      
+
+    # 🔥 Garante ambiente limpo
+    - name: Clean volumes
+      run: docker compose down -v
+
     - name: Create-DB
       run: docker compose up -d
 
+    # 🔥 Espera o Postgres subir corretamente
     - name: Wait-DB
       run: |
         for i in {1..30}; do
-          if docker compose exec -T postgres pg_isready -U root; then
+          if docker exec $(docker compose ps -q postgres) pg_isready -U root; then
+            echo "Postgres is ready!"
             exit 0
           fi
-          sleep 1
+          sleep 2
         done
+        echo "Postgres failed to start"
         docker compose logs postgres
         exit 1
 
     - name: Test
       run: go test -v main_test.go 
-      
-  
+
   build:
     needs: test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: ['ubuntu-latest', 'ubuntu-18.04']
+
     steps:
     - uses: actions/checkout@v3
+
     - name: Build
       run: go build -v main.go
