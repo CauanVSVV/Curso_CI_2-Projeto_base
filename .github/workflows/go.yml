@@ -9,10 +9,11 @@ on:
 jobs:
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         go_version: ['1.18', '1.17', '>=1.18']
+        os: ['ubuntu-latest', 'ubuntu-18.04']
 
     steps:
     - uses: actions/checkout@v3
@@ -22,14 +23,12 @@ jobs:
       with:
         go-version: ${{ matrix.go_version }}
 
-    # 🔥 Garante ambiente limpo
     - name: Clean volumes
       run: docker compose down -v
 
     - name: Create-DB
       run: docker compose up -d
 
-    # 🔥 Espera o Postgres subir corretamente
     - name: Wait-DB
       run: |
         for i in {1..30}; do
