@@ -15,7 +15,7 @@ jobs:
       uses: docker/setup-buildx-action@v4.0.0
 
     - name: Download a Build Artifact
-      uses: actions/download-artifact@v3.1.0
+      uses: actions/download-artifact@v4
       with:
         # Artifact name
         name: programa
@@ -44,5 +44,5 @@ jobs:
         # Push is a shorthand for --output=type=registry
         push: true
         # List of tags
-        tags: cauanvsvv001/go_ci:${{ github.ref_name }}
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/go_ci:${{ github.ref_name }}
               
